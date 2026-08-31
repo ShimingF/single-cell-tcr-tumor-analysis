@@ -62,23 +62,43 @@ This design avoids using thousands of cells from the same patient as independent
 
 ## Main Figures
 
-The final analysis is organized into five figures:
+### Figure 1 — T-cell clonal architecture and cellular mass contribution
 
-### Figure 1 — T-cell clonal architecture
-Clone-size rank-abundance, expansion-tier abundance, and cellular mass contributed by each expansion tier.
+Clone-size rank-abundance distribution, expansion-tier abundance, and cellular mass contributed by each expansion tier.
 
-### Figure 2 — Tissue-associated clonal architecture
-Tissue-specific clone-size distributions, patient-level repertoire clonality, tissue occupancy, and patient-level Tumor-vs-NAT enrichment across expansion tiers.
+![Figure 1](results/figures/Figure1_clonal_architecture.png)
 
-### Figure 3 — Clonal expansion and transcriptional state
-Patient-stratified associations between clonal expansion tiers and transcriptional T-cell states, with pooled UMAP visualization and raw state-level composition shown descriptively.
+---
 
-### Figure 4 — Cross-patient heterogeneity
-Patient-level comparison of clonally expanded T-cell fractions and expansion-tier composition across tumor, NAT, and blood.
+### Figure 2 — Tissue-associated TCR clonal architecture and tumor enrichment
+
+Tissue-specific clone-size distributions, patient-level repertoire clonality, tissue occupancy, and patient-aware Tumor-vs-NAT enrichment analysis.
+
+![Figure 2](results/figures/Figure2_tissue_associated_clonality.png)
+
+---
+
+### Figure 3 — T-cell clonal expansion and transcriptional cell states
+
+Patient-stratified associations between clonal expansion tiers and transcriptional T-cell states, together with descriptive UMAP visualization.
+
+![Figure 3](results/figures/Figure3_clonotype_cell_state.png)
+
+---
+
+### Figure 4 — Cross-patient heterogeneity in clonal architecture
+
+Patient-resolved comparison of clonal expansion across tumor, normal-adjacent tissue, and peripheral blood.
+
+![Figure 4](results/figures/Figure4_patient_reproducibility.png)
+
+---
 
 ### Figure 5 — Tumor-enriched TCR candidate prioritization
-Within-patient Tumor-vs-NAT enrichment testing, BH-FDR correction, abundance/effect-size prioritization, and TCRex specificity annotation of candidate clonotypes.
 
+Within-patient Tumor-vs-NAT enrichment testing, BH-FDR correction, abundance/effect-size prioritization, and TCRex annotation.
+
+![Figure 5](results/figures/Figure5_tumor_associated_tcrs.png)
 Final figure files can be placed under:
 
 ```text

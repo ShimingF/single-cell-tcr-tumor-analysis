@@ -115,8 +115,18 @@ tumor-tcr-clonal-analysis/
 ├── .gitignore
 ├── data/
 │   └── README.md
-├── scripts/
-│   ├── ...
+scripts/
+│   ├── 01_data_import.R
+│   ├── 02_tcr_contig_qc.R
+│   ├── 03_tcr_pairing_qc.R
+│   ├── 04_tcr_metadata_integration.R
+│   ├── 05_clonal_architecture.R
+│   ├── 05b_summary_tables.R
+│   ├── 06_tissue_distribution.R
+│   ├── 07_clonotype_state.R
+│   ├── 08_patient_level.R
+│   ├── 09_TCR_sequence_analysis.R
+│   ├── 10_TCRex.R
 │   └── figure/
 │       ├── 11_figure_common.R
 │       ├── 12_figure1_clonal_architecture.R
@@ -126,6 +136,11 @@ tumor-tcr-clonal-analysis/
 │       └── 16_figure5_tumor_associated_tcrs.R
 └── results/
     └── figures/
+        ├── Figure1_clonal_architecture_panels.png
+        ├── Figure2_tissue_associated_clonality.png
+        ├── Figure3_clonotype_cell_state.png
+        ├── Figure4_patient_reproducibility.png
+        └── Figure5_tumor_associated_tcrs.png
 ```
 
 ## Data Availability

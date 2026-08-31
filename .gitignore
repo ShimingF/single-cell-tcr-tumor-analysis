@@ -1,0 +1,51 @@
+# ============================================================
+# Source and processed single-cell data
+# ============================================================
+data/raw/
+data/processed/
+
+*.rds
+*.RData
+*.rda
+*.h5
+*.h5ad
+*.loom
+*.mtx
+*.mtx.gz
+
+# Sequencing files
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+
+# Large pipeline outputs
+cellranger/
+outs/
+
+# ============================================================
+# R local/session files
+# ============================================================
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# Keep .Rproj files if present
+# *.Rproj is intentionally NOT ignored
+
+# ============================================================
+# OS / editor files
+# ============================================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ============================================================
+# Temporary/log files
+# ============================================================
+*.tmp
+*.temp
+*.log
+~$*

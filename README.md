@@ -67,7 +67,9 @@ This design avoids using thousands of cells from the same patient as independent
 Clone-size rank-abundance distribution, expansion-tier abundance, and cellular mass contributed by each expansion tier.
 
 ![Figure 1](results/figures/Figure1_clonal_architecture.png)
-
+<p align="center">
+  <img src="results/figures/Figure1_clonal_architecture.png" width="900">
+</p>
 ---
 
 ### Figure 2 — Tissue-associated TCR clonal architecture and tumor enrichment
@@ -75,7 +77,9 @@ Clone-size rank-abundance distribution, expansion-tier abundance, and cellular m
 Tissue-specific clone-size distributions, patient-level repertoire clonality, tissue occupancy, and patient-aware Tumor-vs-NAT enrichment analysis.
 
 ![Figure 2](results/figures/Figure2_tissue_associated_clonality.png)
-
+<p align="center">
+  <img src="results/figures/Figure1_clonal_architecture.png" width="900">
+</p>
 ---
 
 ### Figure 3 — T-cell clonal expansion and transcriptional cell states
@@ -83,7 +87,9 @@ Tissue-specific clone-size distributions, patient-level repertoire clonality, ti
 Patient-stratified associations between clonal expansion tiers and transcriptional T-cell states, together with descriptive UMAP visualization.
 
 ![Figure 3](results/figures/Figure3_clonotype_cell_state.png)
-
+<p align="center">
+  <img src="results/figures/Figure1_clonal_architecture.png" width="900">
+</p>
 ---
 
 ### Figure 4 — Cross-patient heterogeneity in clonal architecture
@@ -91,7 +97,9 @@ Patient-stratified associations between clonal expansion tiers and transcription
 Patient-resolved comparison of clonal expansion across tumor, normal-adjacent tissue, and peripheral blood.
 
 ![Figure 4](results/figures/Figure4_patient_reproducibility.png)
-
+<p align="center">
+  <img src="results/figures/Figure1_clonal_architecture.png" width="900">
+</p>
 ---
 
 ### Figure 5 — Tumor-enriched TCR candidate prioritization
@@ -99,6 +107,9 @@ Patient-resolved comparison of clonal expansion across tumor, normal-adjacent ti
 Within-patient Tumor-vs-NAT enrichment testing, BH-FDR correction, abundance/effect-size prioritization, and TCRex annotation.
 
 ![Figure 5](results/figures/Figure5_tumor_associated_tcrs.png)
+<p align="center">
+  <img src="results/figures/Figure1_clonal_architecture.png" width="900">
+</p>
 Final figure files can be placed under:
 
 ```text

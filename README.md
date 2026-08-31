@@ -66,7 +66,7 @@ This design avoids using thousands of cells from the same patient as independent
 
 Clone-size rank-abundance distribution, expansion-tier abundance, and cellular mass contributed by each expansion tier.
 
-![Figure 1](results/figures/Figure1_clonal_architecture.png)
+![Figure 1](results/figures/Figure1_clonal_architecture_panels.png)
 <p align="center">
   <img src="results/figures/Figure1_clonal_architecture.png" width="900">
 </p>

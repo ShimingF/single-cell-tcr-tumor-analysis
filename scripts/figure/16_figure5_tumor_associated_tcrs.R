@@ -187,7 +187,7 @@ standardize_tcrex_from_mapping <- function(tbl, cdr3_col, pathology_col, score_c
     mutate(
       pathology_group = case_when(
         str_detect(pathology, regex("Melanoma|Tumou?r|Cancer|Myeloma|WT1|Leukemia|Lymphoma", ignore_case = TRUE)) ~
-          "Tumor-associated TCRex prediction",
+          "Cancer-associated TCRex prediction",
         str_detect(pathology, regex("Influenza|SARS|COVID|EBV|CMV|HIV|HCV|HBV|DENV|Yellow.?Fever|HSV|VZV", ignore_case = TRUE)) ~
           "Viral-associated TCRex prediction",
         TRUE ~ "Other TCRex prediction"
@@ -572,8 +572,8 @@ tcrex_annotation <- clone_meta %>%
     patient,
     patient_clonotype_clean,
     is_tcrex_matched = !is.na(score),
-    top_pathology_group = ifelse(is_tcrex_matched, pathology_group, "Unmapped"),
-    top_pathology = ifelse(is_tcrex_matched, pathology, "Unmapped"),
+    top_pathology_group = ifelse(is_tcrex_matched, pathology_group, "No TCRex match"),
+    top_pathology = ifelse(is_tcrex_matched, pathology, "No TCRex match"),
     top_epitope = ifelse(is_tcrex_matched, epitope, NA_character_),
     top_tcrex_score = score
   )
@@ -680,11 +680,11 @@ clonotype_results <- clone_meta %>%
     candidate_category = case_when(
       !was_tested ~ "Not tested for tumor enrichment",
       is_tumor_enriched & !is_tcrex_matched ~
-        "Tumor-enriched, TCRex-unmapped",
-      is_tumor_enriched & top_pathology_group == "Tumor-associated TCRex prediction" ~
-        "Tumor-enriched + TCRex tumor-associated",
+        "Tumor-enriched, no TCRex match",
+      is_tumor_enriched & top_pathology_group == "Cancer-associated TCRex prediction" ~
+        "Tumor-enriched + cancer-associated TCRex prediction",
       is_tumor_enriched & top_pathology_group == "Viral-associated TCRex prediction" ~
-        "Tumor-enriched + TCRex viral-associated",
+        "Tumor-enriched + viral-associated TCRex prediction",
       is_tumor_enriched & is_tcrex_matched ~
         "Tumor-enriched + other TCRex prediction",
       TRUE ~ "Tested, not tumor-enriched"
@@ -692,9 +692,9 @@ clonotype_results <- clone_meta %>%
     candidate_category = factor(
       candidate_category,
       levels = c(
-        "Tumor-enriched, TCRex-unmapped",
-        "Tumor-enriched + TCRex tumor-associated",
-        "Tumor-enriched + TCRex viral-associated",
+        "Tumor-enriched, no TCRex match",
+        "Tumor-enriched + cancer-associated TCRex prediction",
+        "Tumor-enriched + viral-associated TCRex prediction",
         "Tumor-enriched + other TCRex prediction",
         "Tested, not tumor-enriched",
         "Not tested for tumor enrichment"
@@ -724,9 +724,9 @@ volcano_df <- clonotype_results %>%
   filter(was_tested) %>%
   mutate(
     volcano_category = case_when(
-      is_tumor_enriched & !is_tcrex_matched ~ "TCRex-unmapped",
-      is_tumor_enriched & top_pathology_group == "Tumor-associated TCRex prediction" ~ "TCRex tumor-associated",
-      is_tumor_enriched & top_pathology_group == "Viral-associated TCRex prediction" ~ "TCRex viral-associated",
+      is_tumor_enriched & !is_tcrex_matched ~ "No TCRex match",
+      is_tumor_enriched & top_pathology_group == "Cancer-associated TCRex prediction" ~ "Cancer-associated TCRex prediction",
+      is_tumor_enriched & top_pathology_group == "Viral-associated TCRex prediction" ~ "Viral-associated TCRex prediction",
       is_tumor_enriched & is_tcrex_matched ~ "Other TCRex prediction",
       TRUE ~ "Not significant"
     ),
@@ -734,9 +734,9 @@ volcano_df <- clonotype_results %>%
   )
 
 volcano_colors <- c(
-  "TCRex-unmapped" = TISSUE_COLORS[["Tumor"]],
-  "TCRex tumor-associated" = "#e7298a",
-  "TCRex viral-associated" = "#7570b3",
+  "No TCRex match" = TISSUE_COLORS[["Tumor"]],
+  "Cancer-associated TCRex prediction" = "#e7298a",
+  "Viral-associated TCRex prediction" = "#7570b3",
   "Other TCRex prediction" = "#1b9e77",
   "Not significant" = "grey82"
 )
@@ -753,25 +753,38 @@ p5a <- ggplot(volcano_df, aes(x = log2_odds_ratio, y = plot_neg_log10_fdr, color
   geom_point(aes(size = global_clone_size), alpha = 0.82) +
   scale_color_manual(
     values = volcano_colors,
-    name = "TCR/TCRex category",
+    name = "Exploratory TCRex annotation",
     drop = TRUE
   ) +
-  scale_size_continuous(range = c(1.5, 6.5), name = "Global Clone Size") +
+  scale_size_continuous(range = c(1.5, 6.0), name = "Global clone size") +
   scale_y_continuous(
     limits = c(0, VOLCANO_FDR_CAP),
     breaks = seq(0, VOLCANO_FDR_CAP, by = 5),
     expand = expansion(mult = c(0.02, 0.03))
   ) +
   labs(
-    title = "A. Within-patient tumor enrichment and TCRex annotation",
+    title = "A. Within-patient tumor enrichment",
     subtitle = paste0(
-      "Tumor vs matched NAT Fisher tests; BH-FDR; y capped at ", VOLCANO_FDR_CAP
+      "Tumor vs matched NAT Fisher tests; BH-FDR; y capped at ",
+      VOLCANO_FDR_CAP
     ),
     x = "Log2 odds ratio (Tumor vs NAT)",
     y = paste0("-Log10(BH-FDR), capped at ", VOLCANO_FDR_CAP)
   ) +
   project_theme() +
-  theme(legend.position = "right")
+  theme(
+    legend.position = "right",
+    legend.box = "vertical",
+    legend.title = element_text(size = 8.8),
+    legend.text = element_text(size = 8),
+    plot.title = element_text(size = 12),
+    plot.subtitle = element_text(size = 8.3),
+    plot.margin = margin(5.5, 8, 5.5, 5.5)
+  ) +
+  guides(
+    color = guide_legend(order = 1, ncol = 1, byrow = TRUE, override.aes = list(size = 3.2)),
+    size = guide_legend(order = 2, ncol = 1)
+  )
 
 # 9. Panel B: Top Tumor-Enriched Clones ----------------------------------------
 top20_tumor_clones <- clonotype_results %>%
@@ -779,16 +792,21 @@ top20_tumor_clones <- clonotype_results %>%
   arrange(p_adj, desc(global_clone_size)) %>%
   slice_head(n = 20) %>%
   mutate(
-    clonotype_label = paste0(patient, ": ", substring(patient_clonotype_clean, 1, 14)),
+    clone_label_short = str_remove(patient_clonotype_clean, paste0("^", patient, "_")),
+    clonotype_label = paste0(patient, ": ", clone_label_short),
     # Keep plot labels short; full epitope/score information remains in the CSV.
     annotation_tag = case_when(
-      !is_tcrex_matched ~ "Unmapped",
-      TRUE ~ top_pathology
+      !is_tcrex_matched ~ "No match",
+      top_pathology_group == "Cancer-associated TCRex prediction" ~
+        paste0(top_pathology, " prediction"),
+      top_pathology_group == "Viral-associated TCRex prediction" ~
+        paste0(top_pathology, " prediction"),
+      TRUE ~ paste0(top_pathology, " prediction")
     ),
     bar_category = case_when(
-      !is_tcrex_matched ~ "TCRex-unmapped",
-      top_pathology_group == "Tumor-associated TCRex prediction" ~ "TCRex tumor-associated",
-      top_pathology_group == "Viral-associated TCRex prediction" ~ "TCRex viral-associated",
+      !is_tcrex_matched ~ "No TCRex match",
+      top_pathology_group == "Cancer-associated TCRex prediction" ~ "Cancer-associated TCRex prediction",
+      top_pathology_group == "Viral-associated TCRex prediction" ~ "Viral-associated TCRex prediction",
       TRUE ~ "Other TCRex prediction"
     )
   )
@@ -800,51 +818,57 @@ p5b <- ggplot(
   geom_col(color = "black", linewidth = 0.25, width = 0.72) +
   geom_text(
     aes(label = annotation_tag),
-    hjust = -0.06, size = 2.5, fontface = "bold", color = "grey20"
+    hjust = -0.04, size = 2.35, fontface = "bold", color = "grey20"
   ) +
   coord_flip(clip = "off") +
   scale_fill_manual(
     values = volcano_colors[names(volcano_colors) != "Not significant"],
-    name = "TCR/TCRex category",
+    name = "Exploratory TCRex annotation",
     drop = TRUE
   ) +
-  scale_y_continuous(labels = comma, expand = expansion(mult = c(0, 0.28))) +
+  scale_y_continuous(labels = comma, expand = expansion(mult = c(0, 0.34))) +
   labs(
     title = "B. Top prioritized tumor-enriched clonotypes",
     subtitle = paste0(
-      "Priority: BH-FDR < ", FDR_THRESHOLD,
-      ", log2 OR > ", LOG2_OR_THRESHOLD,
-      ", Tumor cells >= ", MIN_TUMOR_CELLS_FOR_PRIORITY,
-      ", global clone size >= ", MIN_GLOBAL_CLONE_SIZE_FOR_PRIORITY
+      "BH-FDR < ", FDR_THRESHOLD,
+      "; log2 OR > ", LOG2_OR_THRESHOLD,
+      "; tumor cells >= ", MIN_TUMOR_CELLS_FOR_PRIORITY,
+      "; global clone size >= ", MIN_GLOBAL_CLONE_SIZE_FOR_PRIORITY
     ),
-    x = "Tumor-enriched patient-clonotypes",
+    x = "Tumor-enriched clonotypes",
     y = "Global clone size (cell count)"
   ) +
   project_theme() +
   theme(
     legend.position = "right",
-    plot.margin = margin(5.5, 32, 5.5, 5.5)
-  )
+    legend.direction = "vertical",
+    legend.title = element_text(size = 8.8),
+    legend.text = element_text(size = 8),
+    plot.title = element_text(size = 12),
+    plot.subtitle = element_text(size = 8.1),
+    plot.margin = margin(5.5, 12, 5.5, 5.5)
+  ) +
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE))
 
 # 10. Panel C: Tumor-Enrichment Rate Among Evaluable Clonotypes ---------------
 # Panel C is intentionally simplified relative to Panels A/B. For the summary
 # composition, TCRex-unmapped enriched clones and enriched clones with an
-# "other" (non-tumor/non-viral) TCRex prediction are combined into one orange
-# category: neither carries a tumor-associated or viral-associated TCRex label.
+# "other" (non-cancer/non-viral) TCRex prediction are combined into one orange
+# category: neither carries a cancer-associated or viral-associated TCRex prediction.
 # This avoids a visually negligible green sliver / legend entry while preserving
-# the biologically important distinction between tumor-associated, viral-associated,
+# the biologically important distinction between cancer-associated, viral-associated,
 # and all remaining tumor-enriched candidates.
 panel_c_levels <- c(
-  "Tumor-enriched, no tumor/viral TCRex annotation",
-  "Tumor-enriched + TCRex tumor-associated",
-  "Tumor-enriched + TCRex viral-associated",
+  "Tumor-enriched, no cancer/viral TCRex prediction",
+  "Tumor-enriched + cancer-associated TCRex prediction",
+  "Tumor-enriched + viral-associated TCRex prediction",
   "Tested, not tumor-enriched"
 )
 
 panel_c_colors <- c(
-  "Tumor-enriched, no tumor/viral TCRex annotation" = TISSUE_COLORS[["Tumor"]],
-  "Tumor-enriched + TCRex tumor-associated" = "#e7298a",
-  "Tumor-enriched + TCRex viral-associated" = "#7570b3",
+  "Tumor-enriched, no cancer/viral TCRex prediction" = TISSUE_COLORS[["Tumor"]],
+  "Tumor-enriched + cancer-associated TCRex prediction" = "#e7298a",
+  "Tumor-enriched + viral-associated TCRex prediction" = "#7570b3",
   "Tested, not tumor-enriched" = "grey75"
 )
 
@@ -853,13 +877,13 @@ panel_c_df <- clonotype_results %>%
   mutate(
     panel_c_category = case_when(
       candidate_category %in% c(
-        "Tumor-enriched, TCRex-unmapped",
+        "Tumor-enriched, no TCRex match",
         "Tumor-enriched + other TCRex prediction"
-      ) ~ "Tumor-enriched, no tumor/viral TCRex annotation",
-      as.character(candidate_category) == "Tumor-enriched + TCRex tumor-associated" ~
-        "Tumor-enriched + TCRex tumor-associated",
-      as.character(candidate_category) == "Tumor-enriched + TCRex viral-associated" ~
-        "Tumor-enriched + TCRex viral-associated",
+      ) ~ "Tumor-enriched, no cancer/viral TCRex prediction",
+      as.character(candidate_category) == "Tumor-enriched + cancer-associated TCRex prediction" ~
+        "Tumor-enriched + cancer-associated TCRex prediction",
+      as.character(candidate_category) == "Tumor-enriched + viral-associated TCRex prediction" ~
+        "Tumor-enriched + viral-associated TCRex prediction",
       TRUE ~ "Tested, not tumor-enriched"
     ),
     panel_c_category = factor(panel_c_category, levels = panel_c_levels)
@@ -931,9 +955,9 @@ p5c <- ggplot(
   labs(
     title = "C. Tumor-enrichment rate among statistically evaluable clonotypes",
     subtitle = paste0(
-      "Denominator = tested clonotypes within each tier (Tumor + NAT clone size >= ",
+      "Denominator: tested clonotypes within each tier (Tumor + NAT clone size >= ",
       MIN_TN_CLONE_SIZE_FOR_TEST,
-      "); orange combines TCRex-unmapped and other non-tumor/non-viral predictions"
+      "). Orange combines no-match and other non-cancer/non-viral predictions."
     ),
     x = "Global clone expansion tier",
     y = "Percentage of tested clonotypes (%)"
@@ -942,26 +966,38 @@ p5c <- ggplot(
   theme(
     axis.text.x = element_text(angle = 30, hjust = 1),
     legend.position = "right",
-    plot.margin = margin(8, 12, 5.5, 5.5)
+    legend.title = element_text(size = 8.8),
+    legend.text = element_text(size = 8),
+    plot.title = element_text(size = 12),
+    plot.subtitle = element_text(size = 8.2),
+    plot.margin = margin(8, 10, 5.5, 5.5)
   )
 
 # 11. Combine & Export Figure 5 -------------------------------------------------
-figure5_3panel <- (p5a | p5b) / p5c +
-  plot_layout(heights = c(1.08, 0.92)) +
+# Give Panel B additional width for clonotype labels and right-side annotations.
+# Each panel keeps its own legend on the right for easier standalone reading.
+top_row <- (p5a | p5b) +
+  plot_layout(widths = c(1.18, 1.55))
+
+figure5_3panel <- top_row / p5c +
+  plot_layout(heights = c(1.06, 0.94)) +
   plot_annotation(
-    title = "Figure 5. Prioritization of tumor-enriched TCR clonotypes using tissue enrichment and TCRex annotation",
-    subtitle = "Within-patient Tumor-vs-NAT statistics identify candidates; TCRex matches are treated as database predictions rather than functional proof",
+    title = "Figure 5. Prioritization of tumor-enriched TCR clonotypes",
+    subtitle = paste0(
+      "Within-patient Tumor-vs-NAT enrichment with exploratory TCRex annotation. ",
+      "TCRex predictions were not validated against patient-specific HLA."
+    ),
     theme = theme(
       plot.title = element_text(face = "bold", size = 15),
-      plot.subtitle = element_text(size = 10, color = "grey30")
+      plot.subtitle = element_text(size = 9.5, color = "grey30")
     )
   )
 
 paths <- save_figure_pair(
   figure5_3panel,
   file.path(figure_dir, "Figure5_tumor_associated_tcrs"),
-  width = 13.5,
-  height = 10.8
+  width = 16.4,
+  height = 11.4
 )
 
 cat("============================================================\n")

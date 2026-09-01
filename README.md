@@ -4,12 +4,12 @@ An independent computational reanalysis of paired single-cell RNA-seq and TCR-se
 
 ## Overview
 
-This project integrates single-cell transcriptomic and TCR repertoire information to ask four related questions:
+This project integrates single-cell transcriptomic and TCR repertoire information to address four related questions:
 
 1. How is T-cell clonal expansion distributed across the repertoire?
 2. How does clonal architecture differ across tumor, matched NAT, and peripheral blood?
 3. Which transcriptional T-cell states are associated with clonal expansion across patients?
-4. Which clonotypes are preferentially enriched in tumor relative to matched NAT, and what antigen specificities are suggested by TCRex annotation?
+4. Which clonotypes are preferentially enriched in tumor relative to matched NAT, and which putative epitope associations are suggested by exploratory TCRex annotation?
 
 The analysis intentionally separates **pooled descriptive visualization** from **patient-aware statistical inference**. Patient-specific clonotypes are used throughout inferential analyses to avoid treating individual cells or clonotypes from the same patient as independent biological replicates.
 
@@ -19,15 +19,15 @@ The analysis is based on the publicly available **NCBI Gene Expression Omnibus (
 
 > *Peripheral clonal expansion of T lymphocytes associates with tumour infiltration and response to cancer immunotherapy*
 
-GEO accession: **GSE139555**  
+GEO accession: **GSE139555**
 NCBI GEO: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE139555
 
 The GEO series contains paired single-cell RNA-seq and single-cell TCR-seq data from **pretreatment samples of 14 cancer patients**, with samples collected from tumor, normal-adjacent tissue (NAT), and peripheral blood where available.
 
 Processed files are available through GEO. The original study deposited raw scRNA-seq and scTCR-seq data in the European Genome-phenome Archive (EGA):
 
-- scRNA-seq: **EGAS00001003993**
-- scTCR-seq: **EGAS00001003994**
+* scRNA-seq: **EGAS00001003993**
+* scTCR-seq: **EGAS00001003994**
 
 No patient-level raw or processed source data are redistributed in this repository.
 
@@ -35,17 +35,17 @@ No patient-level raw or processed source data are redistributed in this reposito
 
 The analysis pipeline includes:
 
-- single-cell and TCR metadata import and quality control;
-- productive TCR filtering and strict paired TCRαβ clonotype definition;
-- patient-specific clonotype construction;
-- clone-size and expansion-tier characterization;
-- tissue-compartment repertoire analysis;
-- integration of clonotype expansion with transcriptional T-cell states;
-- patient-stratified odds-ratio analysis with BH-FDR correction;
-- matched within-patient Tumor-vs-NAT comparisons;
-- within-patient Fisher exact testing for tumor-enriched clonotypes;
-- TCRex-based antigen-specificity annotation;
-- effect-size and abundance-based candidate prioritization.
+* single-cell and TCR metadata import and quality control;
+* productive TCR filtering and strict paired TCRαβ clonotype definition;
+* patient-specific clonotype construction;
+* clone-size and expansion-tier characterization;
+* tissue-compartment repertoire analysis;
+* integration of clonotype expansion with transcriptional T-cell states;
+* patient-stratified odds-ratio analysis with BH-FDR correction;
+* matched within-patient Tumor-vs-NAT comparisons;
+* within-patient Fisher exact testing for tumor-enriched clonotypes;
+* exploratory TCRex-based epitope annotation;
+* effect-size, abundance, and supporting-annotation-based candidate prioritization.
 
 ## Statistical Design
 
@@ -53,10 +53,10 @@ Descriptive figures may pool cells across the dataset when the purpose is to vis
 
 Inferential analyses are patient-aware:
 
-- tissue enrichment is evaluated using matched Tumor-vs-NAT comparisons;
-- cell-state associations are summarized across patient-level effects;
-- tumor-enriched clonotypes are tested within patient;
-- multiple comparisons are controlled using the Benjamini-Hochberg false discovery rate (BH-FDR).
+* tissue enrichment is evaluated using matched Tumor-vs-NAT comparisons;
+* cell-state associations are summarized across patient-level effects;
+* tumor-enriched clonotypes are tested within patient;
+* multiple comparisons are controlled using the Benjamini-Hochberg false discovery rate (BH-FDR).
 
 This design avoids using thousands of cells from the same patient as independent biological replicates.
 
@@ -96,7 +96,7 @@ Patient-resolved comparison of clonal expansion across tumor, normal-adjacent ti
 
 ### Figure 5 — Tumor-enriched TCR candidate prioritization
 
-Within-patient Tumor-vs-NAT enrichment testing, BH-FDR correction, abundance/effect-size prioritization, and TCRex annotation.
+Within-patient Tumor-vs-NAT enrichment testing, BH-FDR correction, abundance/effect-size prioritization, and exploratory TCRex-based annotation.
 
 ![Figure 5](results/figures/Figure5_tumor_associated_tcrs.png)
 
@@ -115,7 +115,7 @@ tumor-tcr-clonal-analysis/
 ├── .gitignore
 ├── data/
 │   └── README.md
-scripts/
+├── scripts/
 │   ├── 01_data_import.R
 │   ├── 02_tcr_contig_qc.R
 │   ├── 03_tcr_pairing_qc.R
@@ -151,13 +151,45 @@ To reproduce the analysis, obtain the GSE139555 data from NCBI GEO and place the
 
 ## Interpretation and Limitations
 
-Tumor enrichment and TCRex annotation are used for **candidate prioritization**, not as direct evidence of tumor reactivity. Database-unmapped or tumor-enriched clonotypes require independent experimental validation, such as antigen-specific stimulation, tetramer assays, TCR reconstruction, or functional tumor-recognition assays.
+Tumor enrichment, clonal expansion, transcriptional state association, and TCRex-based annotation are used for **candidate prioritization**, not as direct evidence of tumor reactivity or antigen specificity.
 
-TCRex annotations are computational/database-supported specificity predictions and should not be interpreted as definitive antigen assignments.
+Tumor-enriched clonotypes may reflect antigen-driven expansion, but enrichment alone does not establish recognition of a tumor antigen. Likewise, TCRex predictions are computationally inferred associations with previously characterized epitope-specific TCR repertoires and should not be interpreted as definitive antigen assignments.
+
+### HLA-aware interpretation of TCRex predictions
+
+TCRex-based epitope annotation was used as an **exploratory supporting layer**, rather than as evidence of validated antigen specificity.
+
+First, patient-level HLA genotypes were not available in the public GSE139555 metadata used in this analysis. Because conventional TCR recognition is HLA-restricted, a predicted TCR-epitope association cannot be assumed to be compatible with the antigen-presentation context of an individual patient without corresponding HLA information.
+
+Second, pretrained TCRex models primarily rely on TCR β-chain features, including CDR3β sequence and V/J usage. Although this dataset contains paired TCRαβ information, antigen recognition is determined by the broader TCR-peptide-HLA interaction, and specificity may depend on sequence information not represented in a β-chain-only prediction model.
+
+Third, TCRex baseline prediction rates are evaluated against a generic background TCR repertoire rather than an HLA-matched, patient-specific control repertoire. The resulting prediction scores therefore provide supporting computational evidence rather than patient-specific antigen validation.
+
+Accordingly, candidate prioritization in this project is driven primarily by:
+
+* within-patient Tumor-vs-NAT enrichment;
+* clonotype abundance and expansion;
+* patient-aware statistical evidence;
+* association with transcriptional T-cell states.
+
+TCRex annotations are treated only as an additional exploratory feature when interpreting shortlisted clonotypes.
+
+Candidate TCRs would require independent validation before any claim of antigen specificity or tumor reactivity. Appropriate next steps could include:
+
+* patient-specific HLA typing or inference;
+* restriction of candidate epitopes to HLA-compatible peptide-MHC contexts;
+* reconstruction of complete paired TCRαβ sequences;
+* expression of candidate TCRs in suitable recipient T cells;
+* peptide-specific stimulation assays;
+* peptide-MHC multimer or tetramer assays where appropriate;
+* functional co-culture with antigen-expressing target cells;
+* cytokine release, activation-marker, cytotoxicity, or tumor-recognition assays.
 
 ## Reproducibility
 
 The analysis is implemented primarily in R using reproducible scripts. Intermediate and source datasets are intentionally excluded from version control because of file size and data-governance considerations.
+
+The analytical workflow distinguishes exploratory annotation from statistical candidate prioritization and experimental validation. Computationally nominated clonotypes should therefore be interpreted as **candidate TCRs for follow-up**, rather than validated tumor-reactive or antigen-specific receptors.
 
 ## Acknowledgment
 
